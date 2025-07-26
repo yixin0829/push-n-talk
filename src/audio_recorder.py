@@ -34,11 +34,35 @@ class AudioRecorder:
         self.audio_interface = None
         self.stream = None
         
-    def start_recording(self) -> bool:
-        """Start recording audio."""
+        # Streaming callback support
+        self.audio_chunk_callback: Optional[Callable[[bytes], None]] = None
+        
+    def set_audio_chunk_callback(self, callback: Optional[Callable[[bytes], None]]):
+        """
+        Set a callback function to be called with each audio chunk during recording.
+        
+        Args:
+            callback: Function that takes audio chunk bytes as parameter, or None to disable
+        """
+        self.audio_chunk_callback = callback
+        
+    def start_recording(self, streaming_callback: Optional[Callable[[bytes], None]] = None) -> bool:
+        """
+        Start recording audio.
+        
+        Args:
+            streaming_callback: Optional callback for real-time audio chunk processing
+            
+        Returns:
+            True if recording started successfully, False otherwise
+        """
         if self.is_recording:
             logger.warning("Recording is already in progress")
             return False
+        
+        # Set the streaming callback if provided
+        if streaming_callback:
+            self.audio_chunk_callback = streaming_callback
             
         try:
             self.audio_interface = pyaudio.PyAudio()
@@ -63,50 +87,34 @@ class AudioRecorder:
             logger.error(f"Failed to start recording: {e}")
             self._cleanup()
             return False
-    
+            
     def stop_recording(self) -> Optional[str]:
-        """
-        Stop recording and save audio to a temporary file.
-        
-        Returns:
-            Path to the temporary audio file, or None if recording failed
-        """
+        """Stop recording and save audio to temporary file."""
         if not self.is_recording:
             logger.warning("No recording in progress")
             return None
-            
+        
+        logger.info("Stopping audio recording...")
         self.is_recording = False
         
         # Wait for recording thread to finish
-        if self.recording_thread:
-            self.recording_thread.join(timeout=5.0)
-            
-        # Get sample width before cleanup
-        sample_width = None
-        if self.audio_interface:
-            try:
-                sample_width = self.audio_interface.get_sample_size(self.audio_format)
-            except Exception as e:
-                logger.warning(f"Could not get sample size from audio interface: {e}")
-                # Fallback: calculate sample width from format
-                if self.audio_format == pyaudio.paInt16:
-                    sample_width = 2
-                elif self.audio_format == pyaudio.paInt32:
-                    sample_width = 4
-                elif self.audio_format == pyaudio.paFloat32:
-                    sample_width = 4
-                else:
-                    sample_width = 2  # Default to 16-bit
-            
+        if self.recording_thread and self.recording_thread.is_alive():
+            self.recording_thread.join(timeout=2.0)
+        
+        # Cleanup audio resources
         self._cleanup()
         
         if not self.audio_data:
             logger.warning("No audio data recorded")
             return None
-            
-        if sample_width is None:
-            logger.error("Could not determine sample width")
-            return None
+        
+        # Determine sample width
+        if self.audio_format == pyaudio.paInt16:
+            sample_width = 2
+        elif self.audio_format == pyaudio.paInt32:
+            sample_width = 4
+        else:
+            sample_width = 1
             
         # Save audio to temporary file
         try:
@@ -133,6 +141,14 @@ class AudioRecorder:
             while self.is_recording and self.stream:
                 data = self.stream.read(self.chunk_size, exception_on_overflow=False)
                 self.audio_data.append(data)
+                
+                # Call streaming callback if set
+                if self.audio_chunk_callback:
+                    try:
+                        self.audio_chunk_callback(data)
+                    except Exception as e:
+                        logger.error(f"Error in audio chunk callback: {e}")
+                        
         except Exception as e:
             logger.error(f"Error during recording: {e}")
             self.is_recording = False

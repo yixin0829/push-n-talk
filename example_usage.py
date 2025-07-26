@@ -8,176 +8,96 @@ This script demonstrates different ways to use the PushToTalk application.
 import os
 import sys
 import time
-from dotenv import load_dotenv
+import logging
 
-load_dotenv()
-
-# Add src directory to Python path
+# Add the src directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src import PushToTalkApp, PushToTalkConfig
-
-def example_basic_usage():
-    """Example: Basic usage with default settings."""
-    print("=== Basic Usage Example ===")
-    
-    # Create app with default settings
-    app = PushToTalkApp()
-    
-    print("Press Ctrl+Shift+Space to test recording...")
-    print("Press Ctrl+C to stop")
-    
-    try:
-        app.run()
-    except KeyboardInterrupt:
-        print("\nExiting...")
-
-def example_custom_config():
-    """Example: Custom configuration."""
-    print("=== Custom Configuration Example ===")
-    
-    # Create custom configuration
-    config = PushToTalkConfig()
-    config.hotkey = "ctrl+shift+space"
-    config.enable_text_refinement = False  # Skip GPT refinement for speed
-    config.insertion_method = "sendkeys"  # Use keystroke simulation
-    
-    # Create app with custom config
-    app = PushToTalkApp(config)
-    
-    print("Press Ctrl+Shift+Space to test recording (no text refinement)...")
-    print("Press Ctrl+C to stop")
-    
-    try:
-        app.run()
-    except KeyboardInterrupt:
-        print("\nExiting...")
-
-def example_programmatic_control():
-    """Example: Programmatic control without running main loop."""
-    print("=== Programmatic Control Example ===")
-    
-    # Create app
-    app = PushToTalkApp()
-    
-    # Start the service
-    app.start()
-    
-    print("Service started. You can now test the hotkey.")
-    print("Application status:")
-    status = app.get_status()
-    for key, value in status.items():
-        print(f"  {key}: {value}")
-    
-    try:
-        # Keep running for 30 seconds
-        for i in range(30):
-            print(f"Running... {30-i} seconds remaining", end='\r')
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nInterrupted by user")
-    finally:
-        # Stop the service
-        app.stop()
-        print("\nService stopped")
-
-def example_hotkey_change():
-    """Example: Changing hotkey during runtime."""
-    print("=== Runtime Hotkey Change Example ===")
-    
-    app = PushToTalkApp()
-    app.start()
-    
-    print("Starting with default hotkey: Ctrl+Shift+Space")
-    print("Testing for 10 seconds...")
-    
-    time.sleep(10)
-    
-    # Change hotkey
-    if app.change_hotkey("alt+space"):
-        print("Hotkey changed to: Alt+Space")
-        print("Testing new hotkey for 10 seconds...")
-        time.sleep(10)
-    else:
-        print("Failed to change hotkey")
-    
-    app.stop()
-
-def example_audio_feedback():
-    """Example: Testing audio feedback and toggling features."""
-    print("=== Audio Feedback Example ===")
-    
-    # Create app with audio feedback enabled by default
-    config = PushToTalkConfig()
-    config.enable_audio_feedback = True
-    app = PushToTalkApp(config)
-    
-    app.start()
-    
-    print("Audio feedback is enabled by default.")
-    print("Press Ctrl+Shift+Space to hear the groovy tech sounds!")
-    print("Testing for 15 seconds...")
-    
-    time.sleep(15)
-    
-    # Toggle audio feedback off
-    print("Disabling audio feedback...")
-    app.toggle_audio_feedback()
-    print("Try the hotkey now - no sound should play.")
-    print("Testing for 10 seconds...")
-    
-    time.sleep(10)
-    
-    # Toggle audio feedback back on
-    print("Re-enabling audio feedback...")
-    app.toggle_audio_feedback()
-    print("Audio feedback is back! Try the hotkey again.")
-    print("Testing for 10 seconds...")
-    
-    time.sleep(10)
-    
-    print("Status:")
-    status = app.get_status()
-    for key, value in status.items():
-        print(f"  {key}: {value}")
-    
-    app.stop()
+from push_to_talk import PushToTalkApp, PushToTalkConfig
 
 def main():
-    """Main function to demonstrate different examples."""
-    examples = {
-        "1": ("Basic Usage", example_basic_usage),
-        "2": ("Custom Configuration", example_custom_config),
-        "3": ("Programmatic Control", example_programmatic_control),
-        "4": ("Runtime Hotkey Change", example_hotkey_change),
-        "5": ("Audio Feedback Demo", example_audio_feedback),
-    }
+    """Example usage of the PushToTalk application."""
     
-    print("PushToTalk - Example Usage")
-    print("=" * 40)
-    print("Choose an example to run:")
-    print()
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
     
-    for key, (name, _) in examples.items():
-        print(f"{key}. {name}")
+    logger = logging.getLogger(__name__)
     
-    print()
-    choice = input("Enter your choice (1-5): ").strip()
+    try:
+        # Create configuration
+        config = PushToTalkConfig()
+        
+        # Customize configuration if needed
+        config.hotkey = "ctrl+shift+space"  # Push-to-talk hotkey
+        config.toggle_hotkey = "ctrl+shift+t"  # Toggle recording mode
+        config.enable_text_refinement = True  # Enable AI text refinement
+        config.enable_audio_feedback = True  # Enable audio feedback
+        config.enable_streaming_transcription = True  # Enable real-time streaming transcription
+        config.streaming_model = "gpt-4o-transcribe"  # Use the fast streaming model
+        config.fallback_to_file_transcription = True  # Fallback to file-based if streaming fails
+        
+        # Optional: Set language for transcription (None = auto-detect)
+        # config.streaming_language = "en"  # English
+        
+        logger.info("Starting PushToTalk application with streaming transcription...")
+        logger.info(f"Streaming enabled: {config.enable_streaming_transcription}")
+        logger.info(f"Streaming model: {config.streaming_model}")
+        logger.info(f"Fallback enabled: {config.fallback_to_file_transcription}")
+        
+        # Create and start the application
+        app = PushToTalkApp(config)
+        
+        logger.info("Application initialized successfully!")
+        logger.info(f"Push-to-talk hotkey: {config.hotkey}")
+        logger.info(f"Toggle recording hotkey: {config.toggle_hotkey}")
+        logger.info("Press and hold the push-to-talk key to start recording with real-time transcription.")
+        logger.info("Press Ctrl+C to quit.")
+        
+        # Display current status
+        status = app.get_status()
+        logger.info(f"Application status: {status}")
+        
+        # Run the application
+        app.run()
+        
+    except KeyboardInterrupt:
+        logger.info("Application interrupted by user")
+    except Exception as e:
+        logger.error(f"Application error: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        logger.info("Application stopped")
+
+def streaming_transcription_demo():
+    """Demonstrate streaming transcription capabilities."""
     
-    if choice in examples:
-        name, func = examples[choice]
-        print(f"\nRunning: {name}")
-        print("-" * 40)
-        func()
-    else:
-        print("Invalid choice!")
+    logger = logging.getLogger(__name__)
+    
+    # Create a config optimized for streaming
+    config = PushToTalkConfig()
+    config.enable_streaming_transcription = True
+    config.streaming_model = "gpt-4o-mini-transcribe"  # Faster, lower latency option
+    config.enable_text_refinement = False  # Disable for faster response
+    config.fallback_to_file_transcription = False  # Pure streaming mode
+    
+    logger.info("Running streaming transcription demo...")
+    logger.info("This demo uses pure streaming mode with no fallback.")
+    logger.info("Speech will be transcribed in real-time as you speak.")
+    
+    app = PushToTalkApp(config)
+    
+    try:
+        app.run()
+    except KeyboardInterrupt:
+        logger.info("Demo ended")
 
 if __name__ == "__main__":
-    # Check if OpenAI API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        print("ERROR: OPENAI_API_KEY environment variable is not set!")
-        print("Please set it before running examples:")
-        print("  set OPENAI_API_KEY=your_api_key_here")
-        sys.exit(1)
+    # Run the main example
+    main()
     
-    main() 
+    # Uncomment to run the streaming demo instead
+    # streaming_transcription_demo() 

@@ -6,8 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "keyboard>=0.13.5",
+    "numpy>=2.3.2",
     "openai>=1.97.1",
     "pyaudio>=0.2.14",
     "python-dotenv>=1.1.1",
     "pywin32>=311",
+    "websockets>=15.0.1",
 ]
