@@ -38,7 +38,11 @@ pydantic-core==2.33.2
     # via pydantic
 python-dotenv==1.1.1
     # via push-to-talk (pyproject.toml)
-pywin32==309
+pyautogui==0.9.54
+    # via push-to-talk (pyproject.toml)
+pyperclip==1.8.2
+    # via push-to-talk (pyproject.toml)
+simpleaudio==1.0.4
     # via push-to-talk (pyproject.toml)
 sniffio==1.3.1
     # via

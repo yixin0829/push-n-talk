@@ -2,9 +2,9 @@
 echo Building PushToTalk GUI Windows Executable...
 echo.
 
-REM Clean previous builds
-if exist "dist" rmdir /s /q "dist"
-if exist "build" rmdir /s /q "build"
+REM Clean previous .exe and .zip files
+if exist "dist\PushToTalk.exe" del /f /q "dist\PushToTalk.exe"
+if exist "dist\PushToTalk.zip" del /f /q "dist\PushToTalk.zip"
 
 REM Build the executable
 echo Building GUI application with PyInstaller...

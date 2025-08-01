@@ -1,6 +1,6 @@
 # PushToTalk - AI Refined Speech-to-Text Dictation
 
-A Python application that provides push-to-talk speech-to-text functionality with AI speech to text transcription, smart text refinement, and automatic text insertion into the active window on Windows. **Now features a persistent GUI configuration interface with real-time status management and easy application control.**
+A Python application that provides push-to-talk speech-to-text functionality with AI speech to text transcription, smart text refinement, and automatic text insertion into the active window on Windows, macOS, and Linux. **Now features a persistent GUI configuration interface with real-time status management and easy application control.**
 
 ## Features
 
@@ -17,11 +17,11 @@ A Python application that provides push-to-talk speech-to-text functionality wit
 - [x] GUI for configuration
 - [ ] Customizable glossary for transcription refinement
 - [ ] Streaming transcription with ongoing audio
-- [ ] Cross-platform support (MacOS, Linux)
+- [x] Cross-platform support (MacOS, Linux)
 
 ## Requirements
 
-- Windows OS (10/11)
+- Windows, macOS, or Linux OS
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
 - OpenAI API key (https://platform.openai.com/docs/api-reference/introduction)
 - Microphone access (for recording)
@@ -232,7 +232,7 @@ The application includes clean and simple audio feedback:
 - **Recording Stop**: A lower confirmation beep (660 Hz) that confirms recording completion
 - **Non-Blocking**: Audio playback runs in separate threads to avoid interfering with recording or transcription
 - **Configurable**: Can be toggled on/off via GUI or configuration JSON file
-- **Minimal Dependencies**: Uses Windows' built-in `winsound` module - no additional packages required
+- **Cross-Platform**: Audio cues played using the `simpleaudio` package
 
 ## Architecture
 
@@ -259,7 +259,7 @@ The application consists of several modular components:
 - **AudioRecorder** (`src/audio_recorder.py`): Handles audio recording using PyAudio
 - **Transcriber** (`src/transcription.py`): Converts speech to text using OpenAI Whisper
 - **TextRefiner** (`src/text_refiner.py`): Improves transcription using Refinement Models
-- **TextInserter** (`src/text_inserter.py`): Inserts text into active windows using pywin32
+ - **TextInserter** (`src/text_inserter.py`): Inserts text into active windows using `pyautogui` and `pyperclip`
 - **HotkeyService** (`src/hotkey_service.py`): Manages global hotkey detection
 - **PushToTalkApp** (`src/push_to_talk.py`): Main application orchestrator with dynamic configuration updates
 
@@ -287,7 +287,9 @@ The application consists of several modular components:
 - **keyboard**: Global hotkey detection
 - **pyaudio**: Audio recording
 - **openai**: Speech-to-text and text refinement
-- **pywin32**: Windows-specific text insertion and audio feedback (winsound)
+- **pyautogui**: Cross-platform keyboard input
+- **pyperclip**: Clipboard management
+- **simpleaudio**: Audio feedback beeps
 - **python-dotenv**: Environment variable management
 
 ## Troubleshooting
@@ -316,9 +318,9 @@ The application consists of several modular components:
 
 ### Common Issues
 
-1. **"No module named 'pywin32'"** (Development):
+1. **"No module named 'pyautogui'"** (Development):
    ```bash
-   uv add pywin32
+   uv add pyautogui pyperclip simpleaudio
    ```
 
 2. **"Could not find PyAudio"** (Development):
@@ -340,13 +342,13 @@ The application consists of several modular components:
 5. **Text not inserting**:
    - Make sure the target window is active and has a text input field
    - Try switching insertion method in the GUI (sendkeys vs clipboard)
-   - Check Windows permissions for clipboard access
+   - Check OS permissions for clipboard access
    - Increase insertion delay if text appears truncated
 
 6. **GUI appearance issues**:
    - Try restarting the application
    - Check display scaling settings (recommended: 100-150%)
-   - Ensure Windows is up to date
+   - Ensure your operating system is up to date
 
 ### Logging
 

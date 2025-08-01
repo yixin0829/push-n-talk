@@ -8,7 +8,9 @@ dependencies = [
     "keyboard>=0.13.5",
     "openai>=1.97.1",
     "pyaudio>=0.2.14",
-    "pywin32>=309",
+    "pyautogui>=0.9.54",
+    "pyperclip>=1.8.2",
+    "simpleaudio>=1.0.4",
 ]
 
 [dependency-groups]

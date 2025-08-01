@@ -3,13 +3,13 @@ PushToTalk - A Speech-to-Text Push-to-Talk Application
 
 A Python application that provides push-to-talk speech-to-text functionality
 with OpenAI Whisper transcription, GPT text refinement, and automatic text
-insertion into the active window.
+insertion into the active window across platforms.
 
 Main Components:
 - AudioRecorder: Records audio using pyaudio
 - Transcriber: Converts speech to text using OpenAI Whisper
 - TextRefiner: Improves transcription using Refinement Models
-- TextInserter: Inserts text into active windows using pywin32
+- TextInserter: Inserts text into active windows using cross-platform libraries
 - HotkeyService: Handles push-to-talk hotkey detection
 - PushToTalkApp: Main application orchestrator
 """
